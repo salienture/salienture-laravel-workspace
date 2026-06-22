@@ -1,0 +1,16 @@
+---
+description: Laravel + Inertia + React patterns for app/
+globs: app/**/*
+alwaysApply: false
+---
+
+# Salienture application (`app/`)
+
+- Laravel 13, PHP 8.3+, Inertia 3, React 19, TypeScript, Tailwind 4.
+- Auth: Laravel Fortify → Inertia pages in `resources/js/Pages/Auth/`.
+- Pages: `resources/js/Pages/`; UI: `resources/js/components/ui/` (shadcn/Radix).
+- Shared props: `HandleInertiaRequests` middleware.
+- Tests: Pest in `tests/Feature/` and `tests/Unit/`.
+- Run: `composer dev`, `composer test`, `composer lint` from `app/`, or `make test` from workspace root.
+
+Do not add API-only routes unless requested — default is Inertia responses.

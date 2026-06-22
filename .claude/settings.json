@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(make *)",
+      "Bash(docker compose *)",
+      "Bash(docker *)",
+      "Bash(composer *)",
+      "Bash(php artisan *)",
+      "Bash(npm *)",
+      "Bash(./vendor/bin/*)"
+    ],
+    "deny": [
+      "Bash(git push --force*)",
+      "Bash(git reset --hard*)",
+      "Read(./app/.env)",
+      "Read(./.env)"
+    ]
+  }
+}

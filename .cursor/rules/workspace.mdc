@@ -1,0 +1,15 @@
+---
+description: Salienture workspace conventions (Docker, Makefile, docs)
+alwaysApply: true
+---
+
+# Salienture workspace
+
+This repo is a **dev workspace**, not the Laravel app root.
+
+- Application code lives in `app/` (often symlinked to `../salienture`).
+- Use `make` for Docker and Artisan: `make artisan ARGS="migrate"`, `make test`, `make up`.
+- Stack: FrankenPHP, MariaDB, Redis, Mailpit, phpMyAdmin.
+- Vite runs on the **host** (`make vite`); do not assume assets are built in the image.
+- Patch Docker-related env with `make app-env-docker`, not manual guesswork for service hostnames.
+- Read `CLAUDE.md` and `docs/` before large changes.

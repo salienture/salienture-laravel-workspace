@@ -40,8 +40,17 @@ if [[ -f "${ENV_FILE}" ]] && ! $RECONFIGURE; then
   if [[ -n "${CURRENT_APP_PATH}" && -f "${CURRENT_APP_PATH}/artisan" ]]; then
     green "Workspace already configured: $(basename "${CURRENT_APP_PATH}")"
     dim  "  Path: ${CURRENT_APP_PATH}"
-    dim  "  To change: bash scripts/setup.sh --reconfigure"
-    exit 0
+    if [[ -t 0 ]]; then
+      printf "Change application? [y/N]: "
+      read -r change_ans
+      if [[ ! "${change_ans}" =~ ^[Yy]$ ]]; then
+        exit 0
+      fi
+      echo ""
+    else
+      dim "  To change: bash scripts/setup.sh --reconfigure"
+      exit 0
+    fi
   fi
 fi
 

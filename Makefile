@@ -24,10 +24,10 @@ help: ## Show available targets
 # --- Workspace setup ---
 
 .PHONY: setup reconfigure init env
-setup: ## Detect / select Laravel app and write workspace .env
+setup: ## Detect / select Laravel app; offers to switch if already configured
 	@bash "$(ROOT)scripts/setup.sh"
 
-reconfigure: ## Re-select the active Laravel app (prompts even if already set)
+reconfigure: ## Force re-selection of the active Laravel app (non-interactive-safe)
 	@bash "$(ROOT)scripts/setup.sh" --reconfigure
 
 init: ## First-time setup: configure app, build containers, install deps, migrate

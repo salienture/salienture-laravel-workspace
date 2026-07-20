@@ -12,7 +12,7 @@ a smart app-detection setup script, Makefile workflows, and AI assistant config.
 
 ```bash
 # 1. Clone the workspace
-git clone <workspace-repo> my-project-workspace
+git clone git@github.com:salienture/salienture-laravel-workspace.git my-project-workspace
 cd my-project-workspace
 
 # 2. Clone your Laravel app into app/

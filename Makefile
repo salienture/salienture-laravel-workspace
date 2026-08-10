@@ -15,10 +15,18 @@ DOCKER_DIR  := $(ROOT)docker
 COMPOSE     := docker compose --env-file $(ROOT).env -f $(DOCKER_DIR)/compose.yml
 FRANKENPHP  := $(COMPOSE) exec frankenphp
 
+# Read ports from workspace .env, falling back to compose defaults.
+APP_HTTP_PORT   := $(or $(shell grep -s '^APP_HTTP_PORT=' '$(ROOT).env' 2>/dev/null | cut -d= -f2-),8080)
+MAILPIT_UI_PORT := $(or $(shell grep -s '^MAILPIT_UI_PORT=' '$(ROOT).env' 2>/dev/null | cut -d= -f2-),8025)
+PMA_PORT        := $(or $(shell grep -s '^PMA_PORT=' '$(ROOT).env' 2>/dev/null | cut -d= -f2-),8081)
+
 .DEFAULT_GOAL := help
 
-.PHONY: help
-help: ## Show available targets
+.PHONY: banner help
+banner: ## Print workspace header
+	@bash "$(ROOT)scripts/banner.sh"
+
+help: banner ## Show available targets
 	@grep -E '^[a-zA-Z0-9_.-]+:.*?## ' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
 
 # --- Workspace setup ---
@@ -30,7 +38,7 @@ setup: ## Detect / select Laravel app; offers to switch if already configured
 reconfigure: ## Force re-selection of the active Laravel app (non-interactive-safe)
 	@bash "$(ROOT)scripts/setup.sh" --reconfigure
 
-init: ## First-time setup: configure app, build containers, install deps, migrate
+init: banner ## First-time setup: configure app, build containers, install deps, migrate
 	@bash "$(ROOT)scripts/setup.sh"
 	@$(MAKE) --no-print-directory _init
 
@@ -45,11 +53,7 @@ _init:
 	$(MAKE) --no-print-directory migrate
 	$(FRANKENPHP) php artisan key:generate --no-interaction
 	$(FRANKENPHP) php artisan storage:link --no-interaction
-	@echo ""
-	@echo "  App        http://localhost:$${APP_HTTP_PORT:-8080}"
-	@echo "  Mailpit    http://localhost:$${MAILPIT_UI_PORT:-8025}"
-	@echo "  phpMyAdmin http://localhost:$${PMA_PORT:-8081}"
-	@echo ""
+	$(MAKE) --no-print-directory urls
 	@echo "  Run 'make vite' in a second terminal to start the frontend dev server."
 	@echo ""
 
@@ -62,9 +66,17 @@ env: ## Copy .env templates and patch app .env for Docker services
 
 # --- Docker ---
 
-.PHONY: up down restart build logs ps
-up: ## Start all core services
+.PHONY: up down restart build logs ps urls
+up: banner ## Start all core services
 	$(COMPOSE) up -d
+	@$(MAKE) --no-print-directory urls
+
+urls: ## Print service URLs for the running stack
+	@echo ""
+	@echo "  App        http://localhost:$(APP_HTTP_PORT)"
+	@echo "  Mailpit    http://localhost:$(MAILPIT_UI_PORT)"
+	@echo "  phpMyAdmin http://localhost:$(PMA_PORT)"
+	@echo ""
 
 down: ## Stop and remove containers
 	$(COMPOSE) down

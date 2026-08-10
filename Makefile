@@ -145,7 +145,8 @@ optimize: ## Cache config / routes / views
 # --- Dev workflow ---
 
 .PHONY: dev vite
-dev: up workers-up ## Start stack + workers (run Vite separately)
+dev: ## Start all services including workers (run Vite separately)
+	$(COMPOSE) --profile workers up -d
 	@echo "Run in another terminal: make vite"
 
 vite: ## Start Vite dev server on host

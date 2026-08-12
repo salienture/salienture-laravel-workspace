@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- `make doctor`: preflight checks (Docker running, `.env`/app configured, ports free or already owned by this workspace) — runs automatically before `make up` / `make dev`
+- `make open`: opens the app URL in the default browser
+- `make stan`: run Larastan/PHPStan static analysis (requires `larastan/larastan` in the app)
+- `make pail`: tail Laravel application logs (`php artisan pail`)
+- `make dev` and `make shell` now print the workspace banner; `make dev` now prints service URLs after starting
+- Salienture copyright/license header on `Makefile` and `scripts/*.sh`
+
+### Fixed
+
+- `make down` now stops the `workers` compose profile (`queue`, `scheduler`) as well as the core services
+- `make migrate` no longer aborts the whole batch when a migration fails because its table/column already exists (common after a restored dump or a table created outside migration tracking) — it now marks that one migration as applied and continues, still failing loudly on genuine schema errors
+
 ## [1.0.0] — 2026-06-22
 
 ### Added

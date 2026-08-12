@@ -1,4 +1,16 @@
 #!/usr/bin/env bash
+# Copyright (c) Salienture Private Limited. (https://salienture.com)
+#
+# Licensed under The MIT License
+# For full copyright and license information, please see the LICENSE.txt
+# Redistributions of files must retain the above copyright notice.
+#
+# @copyright Copyright (c) Salienture Private Limited. (https://salienture.com)
+# @link      https://salienture.com Salienture
+# @since     1.0.0
+# @license   https://opensource.org/licenses/mit-license.php MIT License
+# @author    Sandeep Kadyan (sandeepk@salienture.com)
+
 # Patch a Laravel app's .env with Docker Compose service hostnames and DB credentials.
 # Called by scripts/setup.sh and `make env`.
 set -euo pipefail

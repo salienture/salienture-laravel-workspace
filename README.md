@@ -71,7 +71,8 @@ make init
 make up          # Start FrankenPHP, MariaDB, Redis, Mailpit, phpMyAdmin
 make workers-up  # Optional: queue + scheduler containers
 make vite        # Frontend HMR on host (separate terminal)
-make down        # Stop everything
+make open        # Open the app URL in your browser
+make down        # Stop everything (including workers)
 ```
 
 ---
@@ -89,6 +90,9 @@ make shell              # bash inside FrankenPHP container
 make mysql              # MariaDB CLI
 make redis-cli
 make logs
+make pail               # Tail Laravel application logs
+make stan               # Static analysis (Larastan/PHPStan)
+make doctor             # Preflight checks: Docker running, ports free, app configured
 ```
 
 ---

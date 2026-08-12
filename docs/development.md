@@ -58,6 +58,7 @@ make init          # rebuilds and migrates for the new app
 make up              # Start FrankenPHP, MariaDB, Redis, Mailpit, phpMyAdmin
 make workers-up      # Optional: queue + scheduler
 make vite            # Frontend HMR (host)
+make open            # Open the app URL in your browser
 ```
 
 | Service      | URL                         |
@@ -87,6 +88,9 @@ make restore FILE=dumps/x.sql
 make queue-restart      # signal workers to restart
 make build-assets       # npm run build (production)
 make logs
+make pail               # Tail Laravel application logs
+make stan               # Static analysis (Larastan/PHPStan)
+make doctor             # Preflight checks: Docker running, ports free, app configured
 make ps
 make restart
 ```

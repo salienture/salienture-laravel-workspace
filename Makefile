@@ -1,3 +1,15 @@
+# Copyright (c) Salienture Private Limited. (https://salienture.com)
+#
+# Licensed under The MIT License
+# For full copyright and license information, please see the LICENSE.txt
+# Redistributions of files must retain the above copyright notice.
+#
+# @copyright Copyright (c) Salienture Private Limited. (https://salienture.com)
+# @link      https://salienture.com Salienture
+# @since     1.0.0
+# @license   https://opensource.org/licenses/mit-license.php MIT License
+# @author    Sandeep Kadyan (sandeepk@salienture.com)
+
 # Laravel workspace — development commands
 # Run `make help` for all targets
 
@@ -22,9 +34,12 @@ PMA_PORT        := $(or $(shell grep -s '^PMA_PORT=' '$(ROOT).env' 2>/dev/null |
 
 .DEFAULT_GOAL := help
 
-.PHONY: banner help
+.PHONY: banner help doctor
 banner: ## Print workspace header
 	@bash "$(ROOT)scripts/banner.sh"
+
+doctor: ## Preflight checks: Docker running, ports free, app configured
+	@bash "$(ROOT)scripts/doctor.sh"
 
 help: banner ## Show available targets
 	@grep -E '^[a-zA-Z0-9_.-]+:.*?## ' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
@@ -66,10 +81,16 @@ env: ## Copy .env templates and patch app .env for Docker services
 
 # --- Docker ---
 
-.PHONY: up down restart build logs ps urls
-up: banner ## Start all core services
+.PHONY: up down restart build logs ps urls open
+up: doctor banner ## Start all core services
 	$(COMPOSE) up -d
 	@$(MAKE) --no-print-directory urls
+
+open: ## Open the app URL in your default browser
+	@URL="http://localhost:$(APP_HTTP_PORT)"; \
+	if command -v open >/dev/null 2>&1; then open "$$URL"; \
+	elif command -v xdg-open >/dev/null 2>&1; then xdg-open "$$URL"; \
+	else echo "Open manually: $$URL"; fi
 
 urls: ## Print service URLs for the running stack
 	@echo ""
@@ -78,8 +99,8 @@ urls: ## Print service URLs for the running stack
 	@echo "  phpMyAdmin http://localhost:$(PMA_PORT)"
 	@echo ""
 
-down: ## Stop and remove containers
-	$(COMPOSE) down
+down: ## Stop and remove containers (including workers profile)
+	$(COMPOSE) --profile workers down
 
 restart: ## Restart FrankenPHP
 	$(COMPOSE) restart frankenphp
@@ -103,7 +124,7 @@ workers-down: ## Stop queue + scheduler
 # --- Laravel (inside FrankenPHP container) ---
 
 .PHONY: shell artisan composer npm
-shell: ## Open shell in FrankenPHP container
+shell: banner ## Open shell in FrankenPHP container
 	$(FRANKENPHP) bash
 
 artisan: ## Run artisan (ARGS="migrate")
@@ -115,13 +136,13 @@ composer: ## Run composer in app (ARGS="install")
 npm: ## Run npm on host (ARGS="run dev")
 	cd "$(APP_DIR)" && npm $(ARGS)
 
-.PHONY: app-install migrate fresh seed test pint tinker queue-restart build-assets
+.PHONY: app-install migrate fresh seed test pint stan pail tinker queue-restart build-assets
 app-install: ## composer install + npm install
 	$(FRANKENPHP) composer install --no-interaction
 	@cd "$(APP_DIR)" && npm install
 
-migrate: ## Run database migrations
-	$(FRANKENPHP) php artisan migrate
+migrate: ## Run database migrations (skips tables that already exist instead of failing)
+	@bash "$(ROOT)scripts/migrate.sh"
 
 fresh: ## migrate:fresh --seed
 	$(FRANKENPHP) php artisan migrate:fresh --seed
@@ -134,6 +155,12 @@ test: ## Run Pest / PHPUnit
 
 pint: ## Run Laravel Pint (code style)
 	$(FRANKENPHP) ./vendor/bin/pint
+
+stan: ## Run static analysis (Larastan/PHPStan) — requires larastan/larastan
+	@$(FRANKENPHP) sh -c 'test -f vendor/bin/phpstan || { echo "phpstan not found — run: make composer ARGS=\"require --dev larastan/larastan\""; exit 1; }; ./vendor/bin/phpstan analyse'
+
+pail: ## Tail Laravel application logs (php artisan pail)
+	$(FRANKENPHP) php artisan pail
 
 tinker: ## Open Laravel Tinker REPL
 	$(FRANKENPHP) php artisan tinker
@@ -157,8 +184,9 @@ optimize: ## Cache config / routes / views
 # --- Dev workflow ---
 
 .PHONY: dev vite
-dev: ## Start all services including workers (run Vite separately)
+dev: doctor banner ## Start all services including workers (run Vite separately)
 	$(COMPOSE) --profile workers up -d
+	@$(MAKE) --no-print-directory urls
 	@echo "Run in another terminal: make vite"
 
 vite: ## Start Vite dev server on host

@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 
 - `make down` now stops the `workers` compose profile (`queue`, `scheduler`) as well as the core services
+- Install `unzip` in the FrankenPHP image so Composer uses it instead of the PHP zip extension fallback (fixes false "corrupted archive" warnings and preserves UNIX permissions)
 - `make migrate` no longer aborts the whole batch when a migration fails because its table/column already exists (common after a restored dump or a table created outside migration tracking) — it now marks that one migration as applied and continues, still failing loudly on genuine schema errors
 
 ## [1.0.0] — 2026-06-22

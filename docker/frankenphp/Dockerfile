@@ -1,5 +1,9 @@
 FROM dunglas/frankenphp:1-php8.5-bookworm
 
+# System packages
+RUN apt-get update && apt-get install -y --no-install-recommends unzip \
+    && rm -rf /var/lib/apt/lists/*
+
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 

@@ -27,6 +27,11 @@ DOCKER_DIR  := $(ROOT)docker
 COMPOSE     := docker compose --env-file $(ROOT).env -f $(DOCKER_DIR)/compose.yml
 FRANKENPHP  := $(COMPOSE) exec frankenphp
 
+# Directory holding the `php` shim that proxies to the container. Prepended
+# to PATH for host npm targets so tools like Vite's Wayfinder plugin can
+# shell out to PHP without a full local PHP install.
+PHP_SHIM    := $(ROOT)scripts/bin
+
 # Read ports from workspace .env, falling back to compose defaults.
 APP_HTTP_PORT   := $(or $(shell grep -s '^APP_HTTP_PORT=' '$(ROOT).env' 2>/dev/null | cut -d= -f2-),8080)
 MAILPIT_UI_PORT := $(or $(shell grep -s '^MAILPIT_UI_PORT=' '$(ROOT).env' 2>/dev/null | cut -d= -f2-),8025)
@@ -134,7 +139,7 @@ composer: ## Run composer in app (ARGS="install")
 	$(FRANKENPHP) composer $(ARGS)
 
 npm: ## Run npm on host (ARGS="run dev")
-	cd "$(APP_DIR)" && npm $(ARGS)
+	cd "$(APP_DIR)" && PATH="$(PHP_SHIM):$$PATH" npm $(ARGS)
 
 .PHONY: app-install migrate fresh seed test pint stan pail tinker queue-restart build-assets
 app-install: ## composer install + npm install
@@ -169,7 +174,7 @@ queue-restart: ## Signal queue workers to restart after next job
 	$(FRANKENPHP) php artisan queue:restart
 
 build-assets: ## Compile frontend assets for production
-	cd "$(APP_DIR)" && npm run build
+	cd "$(APP_DIR)" && PATH="$(PHP_SHIM):$$PATH" npm run build
 
 .PHONY: key-generate cache-clear optimize
 key-generate: ## Generate app key
@@ -190,7 +195,7 @@ dev: doctor banner ## Start all services including workers (run Vite separately)
 	@echo "Run in another terminal: make vite"
 
 vite: ## Start Vite dev server on host
-	cd "$(APP_DIR)" && npm run dev
+	cd "$(APP_DIR)" && PATH="$(PHP_SHIM):$$PATH" npm run dev
 
 # --- Database ---
 

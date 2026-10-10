@@ -1,0 +1,18 @@
+#!/bin/sh
+# Dev shim: run PHP inside the FrankenPHP container.
+#
+# Host tooling that shells out to `php` (Vite's Wayfinder plugin, npm
+# scripts) needs a working PHP with Laravel's extensions. Rather than
+# require a complete local PHP install, proxy to the running container.
+#
+# Used by the Makefile's host-npm targets via PATH. You can also do:
+#   PATH="$PWD/scripts/bin:$PATH" npm run build
+set -e
+
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+cd "$ROOT" || exit 1
+
+exec docker compose \
+    --env-file "$ROOT/.env" \
+    -f "$ROOT/docker/compose.yml" \
+    exec -T frankenphp php "$@" </dev/null
